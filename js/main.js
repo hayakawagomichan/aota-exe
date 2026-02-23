@@ -167,6 +167,12 @@ const App = {
   },
 
   async _generateImageAsync(hint) {
+    const area = document.getElementById('char-image-area');
+    const prevHtml = area.innerHTML;
+    // 生成中表示
+    area.innerHTML = `<div class="placeholder">がぞうせいせいちゅう...</div>`;
+    area.querySelector('.placeholder').style.animation = 'blink 0.8s step-end infinite';
+
     try {
       const state = GameState.get();
       const b64 = await GeminiAPI.generateImage(state, hint || 'portrait of a Japanese man');
@@ -174,6 +180,12 @@ const App = {
       this._renderCharImage();
     } catch (err) {
       console.error('Image generation error:', err);
+      // エラー時は前の画像を戻すか、エラー表示
+      if (GameState.get().imageB64) {
+        this._renderCharImage();
+      } else {
+        area.innerHTML = `<div class="placeholder">がぞうせいせい しっぱい…<br><span style="font-size:7px;color:var(--hp-red)">${err.message?.slice(0, 60) || 'ERROR'}</span></div>`;
+      }
     }
   },
 
