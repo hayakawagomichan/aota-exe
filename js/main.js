@@ -221,12 +221,16 @@ const App = {
       const el = document.getElementById(`stat-${key}`);
       if (!el) continue;
       const changeEl = el.querySelector('.stat-change');
+      const barFill = el.querySelector('.stat-bar-fill');
+
       if (delta > 0) {
         changeEl.textContent = `+${delta}`;
         changeEl.className = 'stat-change up';
+        barFill.classList.add('bar-up');
       } else if (delta < 0) {
         changeEl.textContent = `${delta}`;
         changeEl.className = 'stat-change down';
+        barFill.classList.add('bar-down');
       } else {
         changeEl.textContent = '';
         changeEl.className = 'stat-change';
@@ -236,7 +240,8 @@ const App = {
         el.classList.remove('stat-flash');
         changeEl.textContent = '';
         changeEl.className = 'stat-change';
-      }, 3000);
+        barFill.classList.remove('bar-up', 'bar-down');
+      }, 4000);
     }
   },
 
