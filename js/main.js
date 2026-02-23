@@ -146,7 +146,11 @@ const App = {
 
       // 3. 画像生成（N回ごと、非同期・UIはブロックしない）
       const interval = CONFIG.IMAGE_GENERATION_INTERVAL || 5;
-      if (state.totalInputCount % interval === 0 || state.totalInputCount === 1) {
+      const shouldGenImage = !state.imageB64
+        || state.totalInputCount % interval === 0
+        || state.totalInputCount === 1;
+      console.log(`[AOTA] inputCount=${state.totalInputCount}, interval=${interval}, generateImage=${shouldGenImage}`);
+      if (shouldGenImage) {
         this._generateImageAsync(aiResult.imagePromptHint);
       }
 
