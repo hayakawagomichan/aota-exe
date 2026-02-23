@@ -177,6 +177,26 @@ html, body {
   color: var(--text-dim);
 }
 
+#char-info .char-job {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-dim);
+}
+
+#char-info .job-name {
+  display: block;
+  font-size: 11px;
+  color: var(--hp-green);
+  letter-spacing: 1px;
+}
+
+#char-info .job-desc {
+  display: block;
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
 /* ステータスパネル */
 #stats-panel {
   flex-shrink: 0;

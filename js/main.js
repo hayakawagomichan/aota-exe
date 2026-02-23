@@ -144,8 +144,11 @@ const App = {
       this._typewrite('narrative-text', aiResult.narrative || '……');
       this._addLogEntry(text, aiResult);
 
-      // 3. 画像生成（非同期・UIはブロックしない）
-      this._generateImageAsync(aiResult.imagePromptHint);
+      // 3. 画像生成（N回ごと、非同期・UIはブロックしない）
+      const interval = CONFIG.IMAGE_GENERATION_INTERVAL || 5;
+      if (state.totalInputCount % interval === 0 || state.totalInputCount === 1) {
+        this._generateImageAsync(aiResult.imagePromptHint);
+      }
 
     } catch (err) {
       console.error('Processing error:', err);
@@ -187,6 +190,14 @@ const App = {
     // キャラクター情報
     document.getElementById('char-epithet').textContent = state.epithet || '---';
     document.getElementById('char-stage').textContent = `STAGE ${stage.num} : ${stage.name}`;
+
+    // 職業
+    const job = GameState.getJob();
+    const jobEl = document.getElementById('char-job');
+    if (jobEl) {
+      jobEl.querySelector('.job-name').textContent = job.name;
+      jobEl.querySelector('.job-desc').textContent = job.desc;
+    }
 
     // ステータス
     this._renderStats(state.stats);
