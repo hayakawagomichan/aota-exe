@@ -1,0 +1,649 @@
+/* AOTA.EXE - Dragon Quest / Famicom Style CSS */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
+:root {
+  --bg: #0a0a0a;
+  --panel-bg: #111118;
+  --border: #e8e8c8;
+  --border-dim: #666650;
+  --text: #f0f0e0;
+  --text-dim: #888870;
+  --accent: #f8d848;
+  --accent2: #58b8f8;
+  --hp-green: #48d848;
+  --hp-yellow: #f8d848;
+  --hp-red: #f85848;
+  --mp-blue: #58b8f8;
+  --crit: #ff6848;
+  --stat-up: #48d848;
+  --stat-down: #f85848;
+  --window-inner: #0a0a1a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Press Start 2P', 'DotGothic16', monospace;
+  font-size: 11px;
+  line-height: 1.8;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* DQ風ウィンドウ枠 */
+.dq-window {
+  position: relative;
+  background: var(--window-inner);
+  border: 3px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  box-shadow:
+    inset 0 0 0 1px var(--border-dim),
+    0 0 0 1px var(--border-dim),
+    0 4px 16px rgba(0,0,0,0.5);
+}
+
+.dq-window::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.dq-window-title {
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  background: var(--window-inner);
+  padding: 0 6px;
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+/* メインレイアウト */
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 6px;
+}
+
+/* ヘッダー */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  flex-shrink: 0;
+}
+
+#header .title {
+  color: var(--accent);
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0 #333;
+}
+
+#header .meta {
+  display: flex;
+  gap: 20px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+#header .meta span {
+  color: var(--text);
+}
+
+/* コンテンツエリア */
+#content {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  min-height: 0;
+}
+
+/* 左パネル（キャラクター + ステータス） */
+#left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 44%;
+  min-width: 340px;
+}
+
+/* キャラクター画像 */
+#char-image-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+#char-image-area img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+#char-image-area .placeholder {
+  color: var(--text-dim);
+  font-size: 9px;
+  text-align: center;
+  line-height: 2;
+}
+
+/* キャラクター情報 */
+#char-info {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 10px 14px;
+}
+
+#char-info .char-name {
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+#char-info .char-epithet {
+  font-size: 10px;
+  color: var(--accent2);
+  margin-bottom: 4px;
+  min-height: 1.8em;
+}
+
+#char-info .char-stage {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* ステータスパネル */
+#stats-panel {
+  flex-shrink: 0;
+  padding: 10px 14px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-size: 10px;
+}
+
+.stat-label {
+  width: 32px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.stat-value {
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.stat-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #222;
+  border: 1px solid var(--border-dim);
+  position: relative;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.6s ease;
+}
+
+.stat-change {
+  width: 40px;
+  font-size: 9px;
+  text-align: right;
+  flex-shrink: 0;
+  min-height: 1em;
+}
+
+.stat-change.up { color: var(--stat-up); }
+.stat-change.down { color: var(--stat-down); }
+
+/* 特性タグ */
+#traits-area {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.trait-tag {
+  background: #222;
+  border: 1px solid var(--border-dim);
+  padding: 2px 6px;
+  font-size: 8px;
+  color: var(--accent2);
+}
+
+.trait-tag.new {
+  animation: traitFlash 0.6s ease 3;
+}
+
+@keyframes traitFlash {
+  0%, 100% { background: #222; }
+  50% { background: #335; }
+}
+
+/* 右パネル */
+#right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 280px;
+}
+
+/* 入力ウィンドウ */
+#input-area {
+  flex-shrink: 0;
+  padding: 10px 14px;
+}
+
+#input-area .prompt-text {
+  font-size: 10px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+#input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#user-input {
+  flex: 1;
+  background: #0a0a1a;
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: 'Press Start 2P', 'DotGothic16', monospace;
+  font-size: 11px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+#user-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(248, 216, 72, 0.3);
+}
+
+#user-input::placeholder {
+  color: var(--text-dim);
+  font-size: 9px;
+}
+
+#submit-btn {
+  background: var(--panel-bg);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: 'Press Start 2P', 'DotGothic16', monospace;
+  font-size: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+#submit-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+#submit-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+#submit-btn:disabled:hover {
+  background: var(--panel-bg);
+  color: var(--accent);
+}
+
+#char-count {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ナラティブ（AIの世界観テキスト） */
+#narrative-area {
+  min-height: 52px;
+  flex-shrink: 0;
+  padding: 10px 14px;
+}
+
+#narrative-text {
+  font-size: 10px;
+  line-height: 2;
+  color: var(--text);
+  min-height: 2.4em;
+}
+
+.cursor-blink::after {
+  content: '▼';
+  animation: blink 0.8s step-end infinite;
+  margin-left: 2px;
+  color: var(--accent);
+  font-size: 8px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ログウィンドウ */
+#log-area {
+  flex: 1;
+  min-height: 80px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#log-area .dq-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#log-entries {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-dim) transparent;
+}
+
+#log-entries::-webkit-scrollbar {
+  width: 4px;
+}
+#log-entries::-webkit-scrollbar-thumb {
+  background: var(--border-dim);
+}
+
+.log-entry {
+  font-size: 9px;
+  padding: 2px 0;
+  border-bottom: 1px solid #1a1a2a;
+  color: var(--text-dim);
+}
+
+.log-entry .log-time {
+  color: var(--text-dim);
+  margin-right: 6px;
+  font-size: 8px;
+}
+
+.log-entry .log-text {
+  color: var(--text);
+}
+
+.log-entry.battle {
+  color: var(--crit);
+}
+
+/* フッター */
+#footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  flex-shrink: 0;
+  font-size: 9px;
+}
+
+#evo-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#evo-progress {
+  display: flex;
+  gap: 1px;
+}
+
+.evo-block {
+  width: 10px;
+  height: 12px;
+  background: #222;
+  border: 1px solid var(--border-dim);
+}
+
+.evo-block.filled {
+  background: var(--accent);
+}
+
+#battle-timer {
+  color: var(--accent2);
+}
+
+#sound-toggle {
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 3px 6px;
+  cursor: pointer;
+}
+
+/* バトルオーバーレイ */
+#battle-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+#battle-overlay.active {
+  display: flex;
+}
+
+#battle-box {
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  padding: 20px;
+}
+
+#battle-log {
+  font-size: 10px;
+  line-height: 2.2;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+#battle-log .battle-line {
+  min-height: 1.8em;
+}
+
+#battle-log .battle-line.crit { color: var(--crit); }
+#battle-log .battle-line.defeat { color: var(--hp-red); }
+#battle-log .battle-line.dodge { color: var(--accent2); }
+#battle-log .battle-line.result { color: var(--accent); font-size: 12px; }
+#battle-log .battle-line.bonus { color: var(--stat-up); }
+#battle-log .battle-line.appear { color: var(--text); font-size: 11px; }
+
+#battle-hp-display {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 10px;
+}
+
+.battle-hp-bar {
+  width: 100px;
+  height: 8px;
+  background: #222;
+  border: 1px solid var(--border-dim);
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.battle-hp-fill {
+  height: 100%;
+  background: var(--hp-green);
+  transition: width 0.4s;
+}
+
+/* APIキー入力モーダル */
+#apikey-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+#apikey-modal.active {
+  display: flex;
+}
+
+#apikey-box {
+  width: 90%;
+  max-width: 480px;
+  padding: 24px;
+  text-align: center;
+}
+
+#apikey-box h2 {
+  color: var(--accent);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+#apikey-box p {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  line-height: 2;
+}
+
+#apikey-input {
+  width: 100%;
+  background: #0a0a1a;
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 10px;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+#apikey-submit {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+}
+
+/* 処理中アニメーション */
+.processing #submit-btn {
+  animation: processPulse 1s ease infinite;
+}
+
+@keyframes processPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+#loading-indicator {
+  display: none;
+  font-size: 9px;
+  color: var(--accent);
+  margin-top: 6px;
+  animation: loadDots 1.5s step-end infinite;
+}
+
+#loading-indicator.active {
+  display: block;
+}
+
+@keyframes loadDots {
+  0% { content: '.'; }
+  33% { content: '..'; }
+  66% { content: '...'; }
+}
+
+/* スクロールバー（全体） */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-dim); border-radius: 2px; }
+
+/* アニメーション */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes statFlash {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(248,216,72,0.15); }
+}
+
+.stat-flash {
+  animation: statFlash 0.4s ease 3;
+}
+
+/* レスポンシブ（ラズパイフルスクリーン対応） */
+@media (max-width: 800px) {
+  #content {
+    flex-direction: column;
+  }
+  #left-panel {
+    width: 100%;
+    min-width: auto;
+  }
+  #char-image-area {
+    min-height: 150px;
+    max-height: 200px;
+  }
+}

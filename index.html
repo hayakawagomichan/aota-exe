@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AOTA.EXE</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- APIキー入力モーダル -->
+<div id="apikey-modal">
+  <div id="apikey-box" class="dq-window">
+    <h2>AOTA.EXE</h2>
+    <p>Gemini APIキーを入力してください。<br>このキーはタブを閉じると消去されます。</p>
+    <input type="password" id="apikey-input" placeholder="API KEY">
+    <br><br>
+    <button id="apikey-submit">はじめる</button>
+  </div>
+</div>
+
+<!-- バトルオーバーレイ -->
+<div id="battle-overlay">
+  <div id="battle-box" class="dq-window">
+    <span class="dq-window-title">BATTLE</span>
+    <div id="battle-hp-display"></div>
+    <div id="battle-log"></div>
+  </div>
+</div>
+
+<!-- メインUI -->
+<div id="app">
+
+  <!-- ヘッダー -->
+  <div id="header" class="dq-window">
+    <div class="title">AOTA.EXE</div>
+    <div class="meta">
+      ENTRIES:<span id="entry-count">0</span>
+      <span id="day-display">STANDBY</span>
+    </div>
+  </div>
+
+  <!-- コンテンツ -->
+  <div id="content">
+
+    <!-- 左パネル -->
+    <div id="left-panel">
+
+      <!-- キャラクター画像 -->
+      <div id="char-image-area" class="dq-window">
+        <div class="placeholder">AWAITING<br>INPUT...</div>
+      </div>
+
+      <!-- キャラクター情報 -->
+      <div id="char-info" class="dq-window">
+        <div class="char-name">青田 努</div>
+        <div class="char-epithet" id="char-epithet">---</div>
+        <div class="char-stage" id="char-stage">STAGE 1 : HUMAN</div>
+      </div>
+
+      <!-- ステータス -->
+      <div id="stats-panel" class="dq-window">
+        <span class="dq-window-title">STATUS</span>
+        <div class="stat-row" id="stat-STR">
+          <span class="stat-label">STR</span>
+          <span class="stat-value">30</span>
+          <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:30.3%"></span></span>
+          <span class="stat-change"></span>
+        </div>
+        <div class="stat-row" id="stat-INT">
+          <span class="stat-label">INT</span>
+          <span class="stat-value">30</span>
+          <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:30.3%"></span></span>
+          <span class="stat-change"></span>
+        </div>
+        <div class="stat-row" id="stat-AGI">
+          <span class="stat-label">AGI</span>
+          <span class="stat-value">30</span>
+          <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:30.3%"></span></span>
+          <span class="stat-change"></span>
+        </div>
+        <div class="stat-row" id="stat-CHA">
+          <span class="stat-label">CHA</span>
+          <span class="stat-value">30</span>
+          <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:30.3%"></span></span>
+          <span class="stat-change"></span>
+        </div>
+        <div class="stat-row" id="stat-WIS">
+          <span class="stat-label">WIS</span>
+          <span class="stat-value">30</span>
+          <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:30.3%"></span></span>
+          <span class="stat-change"></span>
+        </div>
+        <div class="stat-row" id="stat-LCK">
+          <span class="stat-label">LCK</span>
+          <span class="stat-value">30</span>
+          <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:30.3%"></span></span>
+          <span class="stat-change"></span>
+        </div>
+        <div id="traits-area"></div>
+      </div>
+
+    </div>
+
+    <!-- 右パネル -->
+    <div id="right-panel">
+
+      <!-- 入力ウィンドウ -->
+      <div id="input-area" class="dq-window">
+        <span class="dq-window-title">COMMAND</span>
+        <div class="prompt-text">▶ 青田 努の印象・評価・想像を入力せよ</div>
+        <div id="input-row">
+          <input type="text" id="user-input" placeholder="じゆうにかけ（60もじいない）" maxlength="60" autocomplete="off">
+          <button id="submit-btn">けってい</button>
+        </div>
+        <div id="char-count">0/60</div>
+        <div id="loading-indicator">しょりちゅう...</div>
+      </div>
+
+      <!-- ナラティブ -->
+      <div id="narrative-area" class="dq-window">
+        <span class="dq-window-title">MESSAGE</span>
+        <div id="narrative-text">▶ AOTA.EXE を きどう しました。<br>だれかの ことば が せかいを かえる…</div>
+      </div>
+
+      <!-- ログ -->
+      <div id="log-area">
+        <div class="dq-window" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+          <span class="dq-window-title">LOG</span>
+          <div id="log-entries"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <div id="footer" class="dq-window">
+    <div id="evo-bar">
+      EVO
+      <div id="evo-progress"></div>
+      <span id="evo-next">NEXT:8</span>
+    </div>
+    <div id="battle-timer">BATTLE: --:--</div>
+    <button id="sound-toggle">SND:ON</button>
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/api.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
