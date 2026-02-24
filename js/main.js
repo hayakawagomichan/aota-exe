@@ -15,6 +15,9 @@ const App = {
     this._startBattleTimer();
 
     BattleSystem.init();
+
+    // 参照画像をプリロード
+    GeminiAPI.loadReferenceImage();
   },
 
   // --- APIキー管理 ---
@@ -179,7 +182,7 @@ const App = {
 
     try {
       const state = GameState.get();
-      const b64 = await GeminiAPI.generateImage(state, hint || 'portrait of a Japanese man');
+      const b64 = await GeminiAPI.generateImage(state, hint || 'simple villager clothes, neutral expression');
       GameState.setImage(b64);
       this._renderCharImage();
     } catch (err) {

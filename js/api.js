@@ -1,7 +1,32 @@
 // AOTA.EXE - Gemini API Integration
 const GeminiAPI = {
+  _referenceImageB64: null,
+
   _getApiKey() {
     return CONFIG.GEMINI_API_KEY || sessionStorage.getItem('gemini_api_key') || '';
+  },
+
+  async loadReferenceImage() {
+    if (this._referenceImageB64) return this._referenceImageB64;
+    try {
+      const res = await fetch(CONFIG.REFERENCE_IMAGE_PATH);
+      if (!res.ok) throw new Error(`Failed to load reference image: ${res.status}`);
+      const blob = await res.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // data:image/jpeg;base64,XXXX から base64 部分のみ取得
+          this._referenceImageB64 = reader.result.split(',')[1];
+          console.log('[AOTA] Reference image loaded');
+          resolve(this._referenceImageB64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn('[AOTA] Reference image not found, proceeding without it:', e.message);
+      return null;
+    }
   },
 
   async analyzeInput(userText, currentState) {
@@ -27,7 +52,7 @@ STR:${currentState.stats.STR} INT:${currentState.stats.INT} AGI:${currentState.s
 2. newTraits: 入力から連想される新しい特性（4文字以内、1〜2個）。既存特性と重複しないこと。
 3. epithet: 現在の状態を反映した称号（10文字以内）。前回と同じでもよい。
 4. narrative: 世界観テキスト（ドラクエ風のナレーション、40文字以内）。
-5. imagePromptHint: キャラクター画像生成のためのヒント（英語、20語以内）。ステージ${stage.num}のトーン「${stage.tone}」を反映すること。
+5. imagePromptHint: レトロRPGピクセルアートの雰囲気ヒント（英語、15語以内）。キャラの装備・オーラ・表情・背景エフェクトなどを具体的に。例: "wearing iron armor, confident smile, blue aura", "wizard robe, glowing staff, mysterious"
 
 JSONのみを返してください。マークダウンのコードブロックは使わないでください。
 
@@ -75,7 +100,7 @@ JSONのみを返してください。マークダウンのコードブロック�
         newTraits: [],
         epithet: currentState.epithet || '旅人',
         narrative: 'なにかが変わった気がする…',
-        imagePromptHint: 'portrait of a Japanese man',
+        imagePromptHint: 'simple villager clothes, neutral expression',
       };
     }
   },
@@ -87,25 +112,46 @@ JSONのみを返してください。マークダウンのコードブロック�
     const stage = GameState.getStage();
     const traits = state.traits.slice(0, 6).join(', ');
 
-    const prompt = `Generate a character portrait image.
-Subject: A Japanese man named "Aota Tsutomu", age around 40.
-Stage ${stage.num} "${stage.name}": ${stage.tone}
-Visual hint: ${imagePromptHint}
-Traits: ${traits || 'ordinary person'}
-Stats - STR:${state.stats.STR} INT:${state.stats.INT} AGI:${state.stats.AGI} CHA:${state.stats.CHA} WIS:${state.stats.WIS} LCK:${state.stats.LCK}
-Title: ${state.epithet || 'none'}
+    // ステージ別のビジュアル指示（レトロゲーム進化）
+    const stageVisuals = {
+      1: '8-bit NES/Famicom era pixel art. Very limited color palette (4-8 colors). Simple blocky pixels, minimal detail. Like an early Dragon Quest or Final Fantasy I character sprite portrait.',
+      2: '16-bit SNES/Super Famicom era pixel art. Richer colors (16-32 colors), more defined features. Dramatic shading, eyes have visible highlights. Like Chrono Trigger or Final Fantasy VI character art.',
+      3: '32-bit era pixel art with exaggerated features. Vibrant saturated palette, bold outlines. Character traits strongly emphasized in visual design. Like a PlayStation-era RPG character select screen.',
+      4: 'High-detail pixel art with abstract geometric elements. Glitch effects, data-like patterns weaving through the figure. Otherworldly aura. Like a hidden boss in a retro RPG.',
+      5: 'Ultimate pixel art masterpiece. Golden/cosmic aura radiating outward. Legendary final form. Rich detail while maintaining pixel aesthetic. Like the final boss reveal in a classic JRPG.',
+    };
 
-Style: RPG character portrait, dramatic lighting, fantasy art style.
-${stage.num >= 4 ? 'Abstract, geometric, transcendent being.' : ''}
-${stage.num >= 5 ? 'Epic, godlike, cosmic energy, final form.' : ''}
-Square format, centered composition.`;
+    const prompt = `Convert the reference photo into a retro JRPG pixel art character portrait.
+Preserve the person's recognizable facial features but render entirely in pixel art style.
+DO NOT generate a realistic or photographic image. The output MUST look like pixel art from a retro video game.
+
+Style: ${stageVisuals[stage.num] || stageVisuals[1]}
+Character traits: ${traits || 'ordinary person'}
+Title: ${state.epithet || 'none'}
+Visual mood: ${imagePromptHint}
+
+Black or very dark background. Square format, bust-up composition, single character facing slightly left.
+Visible individual pixels. No anti-aliasing. Crisp pixel edges.`;
+
+    // リクエストパーツを構築（参照画像があれば含める）
+    const requestParts = [];
+    const refImage = await this.loadReferenceImage();
+    if (refImage) {
+      requestParts.push({
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: refImage,
+        },
+      });
+    }
+    requestParts.push({ text: prompt });
 
     const url = `${CONFIG.GEMINI_API_BASE}/${CONFIG.GEMINI_IMAGE_MODEL}:generateContent?key=${apiKey}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [{ parts: requestParts }],
         generationConfig: {
           responseModalities: ['TEXT', 'IMAGE'],
         },

@@ -12,4 +12,5 @@ const CONFIG = {
   BATTLE_INTERVAL_MS: 60 * 60 * 1000, // 1時間
   BATTLE_STARTUP_DELAY_MS: 20 * 1000,  // 起動時20秒後
   IMAGE_GENERATION_INTERVAL: 5,         // 何回入力ごとに画像生成するか
+  REFERENCE_IMAGE_PATH: 'img/reference.jpg', // キャラクター参照画像のパス
 };
