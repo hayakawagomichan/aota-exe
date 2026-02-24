@@ -114,8 +114,8 @@ const BattleSystem = {
     const log = [];
     let rounds = 0;
 
-    log.push({ type: 'appear', text: enemy.desc });
-    log.push({ type: 'info', text: `${enemy.name}  HP:${enemyHP}` });
+    log.push({ type: 'appear', text: enemy.desc, playerHP, enemyHP });
+    log.push({ type: 'info', text: `${enemy.name}  HP:${enemyHP}`, playerHP, enemyHP });
 
     const MAX_ROUNDS = 12;
 
@@ -125,48 +125,49 @@ const BattleSystem = {
       // プレイヤーの攻撃
       const isCrit = Math.random() < critRate;
       let dmg = Math.floor(playerATK * (0.8 + Math.random() * 0.4));
-      if (isCrit) {
-        dmg = Math.floor(dmg * 1.8);
-        log.push({ type: 'crit', text: `かいしんの いちげき！ ${dmg}のダメージ！` });
-      } else {
-        log.push({ type: 'attack', text: `AOTAのこうげき！ ${dmg}のダメージ！` });
-      }
+      if (isCrit) dmg = Math.floor(dmg * 1.8);
       enemyHP = Math.max(0, enemyHP - dmg);
+      log.push({
+        type: isCrit ? 'crit' : 'attack',
+        text: isCrit ? `かいしんの いちげき！ ${dmg}のダメージ！` : `AOTAのこうげき！ ${dmg}のダメージ！`,
+        playerHP,
+        enemyHP,
+      });
 
       if (enemyHP <= 0) {
-        log.push({ type: 'defeat', text: `${enemy.name}をたおした！` });
+        log.push({ type: 'defeat', text: `${enemy.name}をたおした！`, playerHP, enemyHP });
         break;
       }
 
       // 敵の攻撃
       const isDodge = Math.random() < dodgeRate;
       if (isDodge) {
-        log.push({ type: 'dodge', text: 'AOTAはひらりとみをかわした！' });
+        log.push({ type: 'dodge', text: 'AOTAはひらりとみをかわした！', playerHP, enemyHP });
       } else {
         const eDmg = Math.floor(enemyATK * (0.8 + Math.random() * 0.4));
         playerHP = Math.max(0, playerHP - eDmg);
-        log.push({ type: 'enemy-attack', text: `${enemy.name}のこうげき！ ${eDmg}のダメージ！` });
+        log.push({ type: 'enemy-attack', text: `${enemy.name}のこうげき！ ${eDmg}のダメージ！`, playerHP, enemyHP });
       }
 
       if (playerHP <= 0) {
-        log.push({ type: 'lose', text: 'AOTAはたおれてしまった…' });
+        log.push({ type: 'lose', text: 'AOTAはたおれてしまった…', playerHP, enemyHP });
         break;
       }
     }
 
     if (rounds >= MAX_ROUNDS && playerHP > 0 && enemyHP > 0) {
       // 引き分け → 勝利扱い
-      log.push({ type: 'draw', text: `${enemy.name}は逃げ出した！` });
+      log.push({ type: 'draw', text: `${enemy.name}は逃げ出した！`, playerHP, enemyHP });
     }
 
     const won = enemyHP <= 0 || (rounds >= MAX_ROUNDS && playerHP > 0);
 
     if (won) {
-      log.push({ type: 'result', text: 'たたかいに しょうりした！' });
-      log.push({ type: 'bonus', text: 'LCK+2 STR+1 を獲得！' });
+      log.push({ type: 'result', text: 'たたかいに しょうりした！', playerHP, enemyHP });
+      log.push({ type: 'bonus', text: 'LCK+2 STR+1 を獲得！', playerHP, enemyHP });
     } else {
-      log.push({ type: 'result', text: 'たたかいに やぶれた…' });
-      log.push({ type: 'bonus', text: 'WIS+3 を獲得（経験は力なり）' });
+      log.push({ type: 'result', text: 'たたかいに やぶれた…', playerHP, enemyHP });
+      log.push({ type: 'bonus', text: 'WIS+3 を獲得（経験は力なり）', playerHP, enemyHP });
     }
 
     return {

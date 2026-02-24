@@ -130,6 +130,8 @@ Character traits: ${traits || 'ordinary person'}
 Title: ${state.epithet || 'none'}
 Visual mood: ${imagePromptHint}
 
+DO NOT include any text, letters, words, numbers, labels, titles, or watermarks anywhere in the image.
+
 Black or very dark background. Square format, bust-up composition, single character facing slightly left.
 Visible individual pixels. No anti-aliasing. Crisp pixel edges.`;
 
@@ -173,5 +175,57 @@ Visible individual pixels. No anti-aliasing. Crisp pixel edges.`;
     }
 
     throw new Error('No image returned from API');
+  },
+
+  async generateEnemyImage(enemyName, stageNum) {
+    const apiKey = this._getApiKey();
+    if (!apiKey) throw new Error('API key not set');
+
+    const stageVisuals = {
+      1: '8-bit NES/Famicom era pixel art. Very limited color palette (4-8 colors). Simple blocky pixels.',
+      2: '16-bit SNES/Super Famicom era pixel art. Richer colors (16-32 colors), more defined features.',
+      3: '32-bit era pixel art. Vibrant saturated palette, bold outlines.',
+      4: 'High-detail pixel art with glitch effects and data-like patterns.',
+      5: 'Ultimate pixel art masterpiece. Cosmic/otherworldly aura.',
+    };
+
+    const prompt = `Generate a retro JRPG monster/enemy portrait in pixel art style.
+This enemy represents the abstract concept "${enemyName}".
+Interpret this concept as a creative fantasy monster or dark entity. Be imaginative and menacing.
+
+Style: ${stageVisuals[stageNum] || stageVisuals[1]}
+
+DO NOT include any text, letters, words, numbers, labels, titles, or watermarks anywhere in the image.
+
+Black or very dark background. Square format. Single creature/entity centered.
+Visible individual pixels. No anti-aliasing. Crisp pixel edges.`;
+
+    const url = `${CONFIG.GEMINI_API_BASE}/${CONFIG.GEMINI_IMAGE_MODEL}:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ['TEXT', 'IMAGE'],
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Gemini Image API error: ${res.status} ${err}`);
+    }
+
+    const data = await res.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+
+    for (const part of parts) {
+      if (part.inlineData) {
+        return part.inlineData.data;
+      }
+    }
+
+    throw new Error('No enemy image returned from API');
   },
 };

@@ -388,23 +388,56 @@ const App = {
     const overlay = document.getElementById('battle-overlay');
     const log = document.getElementById('battle-log');
     const hpDisplay = document.getElementById('battle-hp-display');
+    const enemyImageArea = document.getElementById('battle-enemy-image');
 
     log.innerHTML = '';
+
+    // 敵画像エリア（プレースホルダー → 非同期で画像ロード）
+    enemyImageArea.innerHTML = `<div class="enemy-img-placeholder">？？？</div><div class="enemy-name">${this._escapeHtml(result.enemy)}</div>`;
+
+    const stageNum = GameState.getStage().num;
+    GeminiAPI.generateEnemyImage(result.enemy, stageNum).then(b64 => {
+      const placeholder = enemyImageArea.querySelector('.enemy-img-placeholder');
+      if (placeholder) {
+        placeholder.outerHTML = `<img src="data:image/png;base64,${b64}" alt="${result.enemy}" />`;
+      }
+    }).catch(err => {
+      console.error('Enemy image generation error:', err);
+      const placeholder = enemyImageArea.querySelector('.enemy-img-placeholder');
+      if (placeholder) placeholder.textContent = result.enemy;
+    });
+
     hpDisplay.innerHTML = `
       <div>AOTA HP: <span id="b-player-hp">${result.playerMaxHP}</span>/${result.playerMaxHP}
         <span class="battle-hp-bar"><span class="battle-hp-fill" id="b-player-hp-bar" style="width:100%"></span></span>
       </div>
-      <div>${result.enemy} HP: <span id="b-enemy-hp">${result.enemyMaxHP}</span>/${result.enemyMaxHP}
+      <div>${this._escapeHtml(result.enemy)} HP: <span id="b-enemy-hp">${result.enemyMaxHP}</span>/${result.enemyMaxHP}
         <span class="battle-hp-bar"><span class="battle-hp-fill" id="b-enemy-hp-bar" style="width:100%"></span></span>
       </div>
     `;
 
     overlay.classList.add('active');
 
-    // バトルログを1行ずつ表示
+    // バトルログを1行ずつ表示（HP同期更新）
     for (let i = 0; i < result.log.length; i++) {
       const line = result.log[i];
       await this._delay(600);
+
+      // HPバー更新
+      if (line.playerHP !== undefined) {
+        const pPct = Math.max(0, (line.playerHP / result.playerMaxHP) * 100);
+        document.getElementById('b-player-hp').textContent = line.playerHP;
+        document.getElementById('b-player-hp-bar').style.width = `${pPct}%`;
+        if (pPct <= 25) document.getElementById('b-player-hp-bar').style.background = 'var(--hp-red)';
+        else if (pPct <= 50) document.getElementById('b-player-hp-bar').style.background = 'var(--hp-yellow)';
+      }
+      if (line.enemyHP !== undefined) {
+        const ePct = Math.max(0, (line.enemyHP / result.enemyMaxHP) * 100);
+        document.getElementById('b-enemy-hp').textContent = line.enemyHP;
+        document.getElementById('b-enemy-hp-bar').style.width = `${ePct}%`;
+        if (ePct <= 25) document.getElementById('b-enemy-hp-bar').style.background = 'var(--hp-red)';
+        else if (ePct <= 50) document.getElementById('b-enemy-hp-bar').style.background = 'var(--hp-yellow)';
+      }
 
       const div = document.createElement('div');
       div.className = `battle-line ${line.type}`;
